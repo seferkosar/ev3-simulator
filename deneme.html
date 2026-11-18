@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EV3 Simülatör</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f4f4f0;
+        color: #222;
+        margin: 0;
+        padding: 16px;
+      }
+      h1 { font-size: 1.3rem; margin: 0 0 4px; }
+      .not { color: #666; margin: 0 0 16px; font-size: 0.9rem; }
+      .duzen { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+      .tugla {
+        background: #ddd;
+        border: 2px solid #999;
+        border-radius: 12px;
+        padding: 16px;
+      }
+      canvas {
+        display: block;
+        max-width: 100%;
+        border: 3px solid #333;
+        border-radius: 4px;
+        image-rendering: pixelated;
+      }
+      .kontroller { display: grid; gap: 12px; min-width: 260px; }
+      fieldset { border: 1px solid #bbb; border-radius: 8px; padding: 8px 12px; }
+      legend { font-weight: 600; }
+      input { font: inherit; padding: 4px 6px; }
+      input.kucuk { width: 4em; }
+      button { font: inherit; padding: 4px 12px; cursor: pointer; }
+      ol { font-family: monospace; padding-left: 1.5em; margin: 4px 0 0; }
+      .hata { color: #b00020; min-height: 1.2em; }
+    </style>
+  </head>
+  <body>
+    <h1>EV3 ekran denemesi</h1>
+    <p class="not">Geçici deneme sayfası. Bloklar eklenince bu sayfa oyuna dönüşecek.</p>
+    <div class="duzen">
+      <div class="tugla"><canvas id="ekran"></canvas></div>
+      <div class="kontroller">
+        <fieldset>
+          <legend>Ekrana yaz</legend>
+          <input id="yaz-metin" value="BOS" />
+          <button id="yaz">Yaz</button>
+        </fieldset>
+        <fieldset>
+          <legend>Konuma yaz</legend>
+          x <input id="konum-x" class="kucuk" type="number" value="40" />
+          y <input id="konum-y" class="kucuk" type="number" value="60" />
+          <input id="konum-metin" value="DOLU" />
+          <button id="konum">Yaz</button>
+        </fieldset>
+        <div>
+          <button id="temizle">Ekranı temizle</button>
+          <button id="sifirla">Baştan başla</button>
+        </div>
+        <div class="hata" id="hata"></div>
+        <fieldset>
+          <legend>Yazı günlüğü</legend>
+          <ol id="gunluk"></ol>
+        </fieldset>
+      </div>
+    </div>
+    <script type="module" src="/src/deneme.js"></script>
+  </body>
+</html>

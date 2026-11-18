@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EV3 Simülatör</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/src/stil.css" />
+  </head>
+  <body>
+    <header class="ust">
+      <div class="ust-sol">
+        <h1>Otopark Ekranı</h1>
+        <p class="hikaye" id="hikaye"></p>
+      </div>
+      <div class="ust-sag">
+        <nav class="gorevler" id="gorevler" aria-label="Görevler"></nav>
+        <button id="ipucu" class="ipucu-dugme" title="Bir ipucu göster">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0012 3z" />
+          </svg>
+          <span id="ipucu-yazi">İpucu</span>
+        </button>
+      </div>
+    </header>
+    <p class="gorev-metni" id="gorev-metni"></p>
+
+    <main class="duzen">
+      <section class="editor" aria-label="Kod editörü">
+        <div class="arac-cubugu" role="toolbar" aria-label="Editör düğmeleri">
+          <button id="calistir" class="dugme dugme-ana" title="Programı çalıştır">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5l11 7-11 7z" /></svg>
+            <span>Çalıştır</span>
+          </button>
+          <span class="ayirici"></span>
+          <button id="geri-al" class="dugme" title="Geri al" aria-label="Geri al" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3" /></svg>
+          </button>
+          <button id="yinele" class="dugme" title="Yinele" aria-label="Yinele" disabled>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3" /></svg>
+          </button>
+          <span class="ayirici"></span>
+          <button id="disa-aktar" class="dugme" title="Programı dosyaya kaydet" aria-label="Dışa aktar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
+          </button>
+          <button id="ice-aktar" class="dugme" title="Dosyadan program aç" aria-label="İçe aktar">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7 9l5-5 5 5M5 20h14" /></svg>
+          </button>
+          <input id="dosya-sec" type="file" accept=".json,application/json" hidden />
+        </div>
+        <div id="bloklar" class="bloklar"></div>
+        <section class="konsol" aria-label="Konsol">
+          <div class="konsol-baslik">
+            <span>Konsol</span>
+            <button id="konsol-temizle" class="metin-dugme">Temizle</button>
+          </div>
+          <ol id="konsol" class="konsol-satirlar" aria-live="polite"></ol>
+        </section>
+      </section>
+
+      <section class="sag" aria-label="Robot ve kod">
+        <div class="sekmeler" role="tablist">
+          <button role="tab" id="sekme-robot" aria-controls="panel-robot" aria-selected="true">Robot</button>
+          <button role="tab" id="sekme-python" aria-controls="panel-python" aria-selected="false">
+            &lt;/&gt; Python
+          </button>
+        </div>
+
+        <div id="panel-robot" role="tabpanel" aria-labelledby="sekme-robot" class="panel panel-robot">
+          <div class="tugla" aria-label="Sanal EV3 tuğlası">
+            <div class="tugla-ekran-cerceve">
+              <canvas id="ekran" aria-label="EV3 ekranı"></canvas>
+            </div>
+            <div class="tugla-dugmeler" aria-hidden="true">
+              <span class="isik" id="durum-isigi"></span>
+              <div class="yon-dugmeleri">
+                <span class="yd yd-yukari"></span>
+                <span class="yd yd-sol"></span>
+                <span class="yd yd-orta"></span>
+                <span class="yd yd-sag"></span>
+                <span class="yd yd-asagi"></span>
+              </div>
+              <span class="isik"></span>
+            </div>
+          </div>
+          <p id="fare-konumu" class="fare-konumu" aria-live="polite">
+            Fareyi ekranın üstünde gezdir: konumu burada görürsün.
+          </p>
+          <button id="sifirla" class="dugme-acik">Ekranı sıfırla</button>
+        </div>
+
+        <div id="panel-python" role="tabpanel" aria-labelledby="sekme-python" class="panel panel-python" hidden>
+          <p class="python-not">Bloklarının Python karşılığı. Bu kod gerçek EV3'te (Pybricks) çalışır.</p>
+          <pre id="python" aria-readonly="true" aria-label="Python kodu"></pre>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
