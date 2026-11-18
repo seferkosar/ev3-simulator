@@ -48,6 +48,10 @@ export function motorlarOlustur(simdi = () => Date.now()) {
     },
     hiz: (port) => al(port).hiz,
     derece,
+    /** Motoru durdurur ve sayılan dereceyi tam değere getirir (süreli dönüş sonunda: enkoder hedefte durur). */
+    durdurDerecede(port, d) {
+      Object.assign(al(port), { hiz: 0, t0: simdi(), d0: d });
+    },
     sifirla(port) {
       Object.assign(al(port), { t0: simdi(), d0: 0 });
     },

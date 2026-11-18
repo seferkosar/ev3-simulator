@@ -22,7 +22,7 @@ const el = (etiket, ozellik = {}, ...cocuk) => {
 function pencereBilgisi(d) {
   if (d.etkinlik) {
     return {
-      ust: `Etkinlik · ${d.grup} · EV3 çalışma sitesi, konu ${d.id}`,
+      ust: `Etkinlik · ${d.grup} · EV3 çalışma sitesi, konu ${d.konu}`,
       durum: d.uyarlama ? `${ROZET.calisiyor[0]}. Uyarlama: ${d.uyarlama}` : ROZET.calisiyor[0],
       satirlar: [
         ['Ne yapıyor?', d.aciklama],
@@ -79,16 +79,19 @@ export function dersMenusuOlustur({ menu, liste, pencere, alanlar, gorevler, etk
       el(
         'section',
         {},
-        el('h3', {}, etkinlikler.ad),
+        el('h3', {}, `${etkinlikler.ad} (${etkinlikler.etkinlikler.length})`),
         el('p', { class: 'seviye-alt' }, etkinlikler.alt),
-        el('ol', {}, ...etkinlikler.etkinlikler.map((e) =>
-          listeDugmesi(
-            { 'data-ders': e.anahtar },
-            e.grup,
-            e.baslik,
-            el('span', { class: 'rozet calisiyor' }, e.mod === 'sahne' ? '✓ Sahnede' : '✓ Robotta'),
-            () => goster(e),
-          ))),
+        ...etkinlikler.gruplar.flatMap((g) => [
+          el('h4', { class: 'etkinlik-grubu' }, g),
+          el('ol', {}, ...etkinlikler.etkinlikler.filter((e) => e.grup === g).map((e) =>
+            listeDugmesi(
+              { 'data-ders': e.anahtar },
+              `K${e.konu}`,
+              e.baslik,
+              el('span', { class: 'rozet calisiyor' }, e.mod === 'sahne' ? '✓ Sahnede' : '✓ Robotta'),
+              () => goster(e),
+            ))),
+        ]),
       ),
       ...seviyeler.map((s) =>
         el(

@@ -252,10 +252,18 @@ export function yurutucuOlustur(
     const derece = dereceyeCevir(miktar, birim);
     const ms = derece === null ? Number(miktar) * 1000 : donusSuresiMs(derece, yuzdedenHiz(enHizli));
     const yon = derece !== null && derece < 0 ? -1 : 1;
+    const bas = Object.fromEntries(portlar.map((p) => [p, hamMotorlar.derece(p)]));
     for (const p of portlar) motorHizi(p, hizlar[p] * yon);
     motorBildir();
     await beklet(ms);
-    for (const p of portlar) motorlar.hizAyarla(p, 0);
+    for (const p of portlar) {
+      motorlar.hizAyarla(p, 0);
+      // Derece birimiyle dönüşte motor hedefte durur (bekleme geç bitse de aşmaz).
+      if (derece !== null && hizlar[p] !== 0) {
+        const oran = Math.abs(hizlar[p]) / enHizli;
+        hamMotorlar.durdurDerecede(p, bas[p] + Math.sign(hizlar[p] * yon) * Math.abs(derece) * oran);
+      }
+    }
     motorBildir();
     yiginKontrol(yigin);
   }

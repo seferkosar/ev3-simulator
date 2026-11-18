@@ -4,6 +4,7 @@
 // bloklarımızla yazılmış hâlidir; değiştirilen yerler `uyarlama` notunda yazar.
 // tests/etkinlikler.test.js her birini öğrencinin yapacağı hareketlerle sahte saatte çalıştırır.
 import { programaCevir } from '../dersler/donustur.js';
+import { EK_ETKINLIKLER } from './etkinlikEk.js';
 
 const bas = (...b) => [['start'], ...b];
 const v = (ad) => ['var', ad];
@@ -371,13 +372,24 @@ export const ETKINLIKLER = [
   },
 ];
 
-const GRUPLAR = ['Tuğla', 'Sensör', 'Hareket', 'Motor', 'Olay', 'Kontrol', 'Operatör', 'Değişken', 'Proje'];
+const GRUPLAR = [
+  'Tuğla', 'Hareket', 'Dokunma', 'Ultrasonik', 'Renk ve çizgi', 'Gyro', 'Motor',
+  'Döngü ve karar', 'Olay', 'Veri ve hesap', 'Bloklarım', 'Proje',
+];
+// İlk seçmedeki grupları konu gruplarına taşı.
+const YENI_GRUP = { 138: 'Dokunma', 140: 'Ultrasonik', 141: 'Gyro', 156: 'Döngü ve karar', 157: 'Döngü ve karar', 158: 'Veri ve hesap', 162: 'Veri ve hesap' };
+
+const TUMU = [
+  ...ETKINLIKLER.map((e) => ({ ...e, id: String(e.id), konu: e.id, grup: YENI_GRUP[e.id] ?? e.grup })),
+  ...EK_ETKINLIKLER,
+];
 
 /** Görevler menüsü için görünüm (Görevler menüsündeki derslerle aynı biçim). */
 export const ETKINLIK_GORUNUMU = {
   ad: 'Etkinlikler',
-  alt: 'EV3 çalışma sitesinin uygulamalı etkinliklerinden seçmeler (tuğla, sensör, hareket, motor, olay, proje).',
-  etkinlikler: GRUPLAR.flatMap((g) => ETKINLIKLER.filter((e) => e.grup === g)).map((e) => ({
+  alt: 'EV3 çalışma sitesinin uygulamalı etkinlikleri ve konu görevleri: tuğla, hareket, sensörler, motor, döngü, olay, veri, kendi bloklar ve projeler.',
+  gruplar: GRUPLAR,
+  etkinlikler: GRUPLAR.flatMap((g) => TUMU.filter((e) => e.grup === g)).map((e) => ({
     ...e,
     anahtar: `e-${e.id}`,
     etkinlik: true,

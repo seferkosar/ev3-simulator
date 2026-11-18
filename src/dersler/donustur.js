@@ -143,6 +143,9 @@ export function programaCevir(programlar) {
         const donus = y ? (y.yon ? { FWD: 0, BWD: 0, RIGHT: 100, LEFT: -100 }[y.yon] : y.donus) : null;
         return { type: 'hareket_baslat_hizla', inputs: { DONUS: y ? golge(donus) : sayiGirisi(a[0]), HIZ: sayiGirisi(a[1]) } };
       }
+      case 'mostarth': return { type: 'motor_hizla_baslat', fields: { PORT: tr(a[0]) }, inputs: { HIZ: sayiGirisi(a[1]) } };
+      case 'broadcast': return { type: 'olay_yayinla', fields: { MESAJ: 'mesaj1' } };
+      case 'broadcastwait': return { type: 'olay_yayinla_bekle', fields: { MESAJ: 'mesaj1' } };
       case 'waitbtn':
         return { type: 'sensor_dugme_bekle', fields: { DUGME: eslestir(DUGME, a[0], 'düğme'), DURUM: eslestir(DURUM, a[1] ?? '~basılı', 'durum') } };
       case 'waittouch':
@@ -222,6 +225,7 @@ export function programaCevir(programlar) {
       };
     }
     if (bas[0] === 'onrenk') return { type: 'olay_renk', ...konum, fields: { PORT: tr(bas[1]), RENK: eslestir(RENK, bas[2], 'renk') }, ...devam };
+    if (bas[0] === 'onmesaj') return { type: 'olay_mesaj_gelince', ...konum, fields: { MESAJ: 'mesaj1' }, ...devam };
     if (bas[0] === 'ontimer') return { type: 'olay_zamanlayici', ...konum, inputs: { DEGER: golge(bas[1]) }, ...devam };
     if (bas[0] === 'def') {
       const ad = asciiAd(bas[1]);
