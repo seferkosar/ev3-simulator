@@ -1,7 +1,9 @@
+import * as Blockly from 'blockly/core';
 import { Order } from 'blockly/python';
 import { Order as JsOrder } from 'blockly/javascript';
 import { komut, giris, secim, yigin, aracOgesi } from '../ortak.js';
 import { saniyedenMs, saniyedenMsJs } from '../pythonYardimci.js';
+import { waitImport, bekleDongusu } from '../pyDonanim.js';
 
 const S = 'kontrol_blocks';
 
@@ -36,12 +38,31 @@ const b = {
   },
 };
 
+const pyKosul = (u, b) => u.valueToCode(b, 'KOSUL', Order.NONE) || 'False';
+const jsKosul = (u, b) => u.valueToCode(b, 'KOSUL', JsOrder.NONE) || 'false';
+const pyGovde = (u, b, ad = 'YAP') => u.statementToCode(b, ad) || `${u.INDENT}pass\n`;
+// Döngünün her turunda bir adım: boş "sürekli" döngü bile sayfayı kilitlemez, durdurulabilir.
+const jsGovde = (u, b, ad = 'YAP') =>
+  `${u.INDENT}await adim(${u.quote_(b.id)}, YIGIN);\n${u.statementToCode(b, ad)}`;
+
 const python = {
   kontrol_bekle: (blok, u) => {
-    u.definitions_['import_wait'] = 'from pybricks.tools import wait';
+    waitImport(u);
     const sure = u.valueToCode(blok, 'SURE', Order.MULTIPLICATIVE) || '0';
     return `wait(${saniyedenMs(sure)})\n`;
   },
+  kontrol_olana_kadar_bekle: (b, u) => bekleDongusu(u, pyKosul(u, b)),
+  kontrol_tekrarla: (b, u) => {
+    const n = u.valueToCode(b, 'SAYI', Order.NONE) || '0';
+    return `for _ in range(int(${n})):\n${pyGovde(u, b)}`;
+  },
+  kontrol_surekli: (b, u) => `while True:\n${pyGovde(u, b)}`,
+  kontrol_olana_kadar_tekrarla: (b, u) => `while not (${pyKosul(u, b)}):\n${pyGovde(u, b)}`,
+  kontrol_eger: (b, u) => `if ${pyKosul(u, b)}:\n${pyGovde(u, b)}`,
+  kontrol_eger_degilse: (b, u) =>
+    `if ${pyKosul(u, b)}:\n${pyGovde(u, b)}else:\n${pyGovde(u, b, 'DEGILSE')}`,
+  kontrol_diger_yiginlari_durdur: () => "pass  # Pybricks'te aynı anda çalışan yığın yok\n",
+  kontrol_durdur: () => 'raise SystemExit\n',
 };
 
 const js = {
@@ -49,6 +70,19 @@ const js = {
     const sure = u.valueToCode(blok, 'SURE', JsOrder.MULTIPLICATION) || '0';
     return `await bekle(${saniyedenMsJs(sure)});\n`;
   },
+  kontrol_olana_kadar_bekle: (b, u) => `await robot.bekleKosul(() => (${jsKosul(u, b)}), YIGIN);\n`,
+  kontrol_tekrarla: (b, u) => {
+    const n = u.valueToCode(b, 'SAYI', JsOrder.NONE) || '0';
+    const i = u.nameDB_.getDistinctName('sayac', Blockly.Names.NameType.VARIABLE);
+    return `for (let ${i} = 0; ${i} < op.sayi(${n}); ${i}++) {\n${jsGovde(u, b)}}\n`;
+  },
+  kontrol_surekli: (b, u) => `while (true) {\n${jsGovde(u, b)}}\n`,
+  kontrol_olana_kadar_tekrarla: (b, u) => `while (!(${jsKosul(u, b)})) {\n${jsGovde(u, b)}}\n`,
+  kontrol_eger: (b, u) => `if (${jsKosul(u, b)}) {\n${u.statementToCode(b, 'YAP')}}\n`,
+  kontrol_eger_degilse: (b, u) =>
+    `if (${jsKosul(u, b)}) {\n${u.statementToCode(b, 'YAP')}} else {\n${u.statementToCode(b, 'DEGILSE')}}\n`,
+  kontrol_diger_yiginlari_durdur: () => 'robot.digerleriniDurdur(YIGIN);\n',
+  kontrol_durdur: () => 'robot.programdanCik();\n',
 };
 
 export default {

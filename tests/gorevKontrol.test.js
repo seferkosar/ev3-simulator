@@ -111,9 +111,12 @@ describe('program özeti (gerçek bloklardan)', () => {
 });
 
 describe('görevde izinli bloklar', () => {
-  it('Görev 1: konuma yaz ve değişkenler izinli değil, değer ovalleri her zaman izinli', () => {
+  it('Görev 1: Ekran blokları izinli, değişkenler ve diğer kategoriler değil, değer ovalleri her zaman', () => {
     expect(izinliMi('ekran_satira_yaz', 1)).toBe(true);
-    expect(izinliMi('ekran_konuma_yaz', 1)).toBe(false);
+    expect(izinliMi('ekran_konuma_yaz', 1)).toBe(true);
+    expect(izinliMi('ekran_resim', 1)).toBe(true);
+    expect(izinliMi('ekran_durum_isigi', 1)).toBe(true);
+    expect(izinliMi('op_birlestir', 1)).toBe(false);
     expect(izinliMi('variables_set', 1)).toBe(false);
     expect(izinliMi('motor_baslat', 1)).toBe(false);
     expect(izinliMi('ev3_metin', 1)).toBe(true);

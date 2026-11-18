@@ -49,10 +49,22 @@ describe('Python üretimi', () => {
     expect(kodUret(program([]))).toBe(BASLIK);
   });
 
-  it('Görev 1: satır 1 → draw_text(0, 0, ...)', () => {
+  it('Görev 1: satır 1 → önce satırı temizle, sonra draw_text(0, 0, ...)', () => {
     expect(kodUret(program([satiraYaz('BOS')]))).toBe(
-      `${BASLIK}\nev3.screen.draw_text(0, 0, 'BOS')\n`,
+      BASLIK.replace('EV3Brick\n', 'EV3Brick\nfrom pybricks.parameters import Color\n') +
+        '\nev3.screen.draw_box(0, 0, 177, 15, fill=True, color=Color.WHITE)\n' +
+        "ev3.screen.draw_text(0, 0, 'BOS')\n",
     );
+  });
+
+  it('satır değişkenden gelirse kutu sınırları ifadeyle yazılır', () => {
+    const kod = kodUret(
+      program(
+        [{ type: 'ekran_satira_yaz', inputs: { METIN: metin('A'), SATIR: { block: { type: 'variables_get', fields: { VAR: { id: 'v1' } } } } } }],
+        { variables: [{ name: 'n', id: 'v1' }] },
+      ),
+    );
+    expect(kod).toContain('ev3.screen.draw_box(0, (n - 1) * 16, 177, n * 16 - 1, fill=True, color=Color.WHITE)');
   });
 
   it('satır 3 → y = 32 (satır yüksekliği 16)', () => {
@@ -61,7 +73,7 @@ describe('Python üretimi', () => {
 
   it('Görev 2: temizle sonra DOLU, sıra korunur', () => {
     expect(kodUret(program([{ type: 'ekran_temizle' }, satiraYaz('DOLU')]))).toContain(
-      "ev3.screen.clear()\nev3.screen.draw_text(0, 0, 'DOLU')\n",
+      "ev3.screen.clear()\nev3.screen.draw_box(0, 0, 177, 15, fill=True, color=Color.WHITE)\nev3.screen.draw_text(0, 0, 'DOLU')\n",
     );
   });
 
@@ -145,6 +157,31 @@ describe('Python üretimi', () => {
     expect(kod).toContain(
       "ev3.screen.draw_text(0, 0, 'A', text_color=Color.WHITE, background_color=Color.BLACK)",
     );
+  });
+
+  it('resim göster → load_image(ImageFile....) ve ImageFile içe aktarılır', () => {
+    const kod = kodUret(program([{ type: 'ekran_resim', fields: { RESIM: 'DIZZY' } }]));
+    expect(kod).toContain('from pybricks.media.ev3dev import ImageFile\n');
+    expect(kod).toContain('ev3.screen.load_image(ImageFile.DIZZY)\n');
+  });
+
+  it('süreli resim → load_image, wait, clear', () => {
+    const kod = kodUret(
+      program([{ type: 'ekran_resim_sureli', fields: { RESIM: 'NEUTRAL' }, inputs: { SURE: sayi(2) } }]),
+    );
+    expect(kod).toContain('from pybricks.tools import wait\n');
+    expect(kod).toContain('ev3.screen.load_image(ImageFile.NEUTRAL)\nwait(2000)\nev3.screen.clear()\n');
+  });
+
+  it('durum ışığı → ev3.light.on(Color...) / ev3.light.off()', () => {
+    const kod = kodUret(
+      program([
+        { type: 'ekran_durum_isigi', fields: { RENK: 'RED' } },
+        { type: 'ekran_durum_isigi', fields: { RENK: 'OFF' } },
+      ]),
+    );
+    expect(kod).toContain('from pybricks.parameters import Color\n');
+    expect(kod).toContain('ev3.light.on(Color.RED)\nev3.light.off()\n');
   });
 
   it('bekle → wait(milisaniye) ve wait içe aktarılır', () => {

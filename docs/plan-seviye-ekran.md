@@ -1,5 +1,14 @@
 # Plan: Otopark Ekranı seviyesi
 
+## Güncelleme (18 Kasım 2026, ikinci): bütün Ekran blokları çalışıyor
+
+| Konu | Karar |
+|---|---|
+| Ekran blokları | Resim göster, süreli resim, durum ışığı da çalışır; **bütün Ekran blokları her görevde açık**. |
+| Süre sınırı | 3 sn yalnızca işlem süresi; bekleme ve süreli resim süreleri eklenir; toplam en fazla 60 sn. |
+| Süreli resim | Resim süre boyunca kalır, sonra ekran temizlenir (`load_image` → `wait` → `clear`). |
+| Göz resimleri | Bu proje için çizildi (`src/ekran/resimler.js`); Pybricks `ImageFile` adlarıyla eşleşir. |
+
 ## Güncelleme (18 Kasım 2026): EV3 Classroom tarzı bloklar, CoderZ benzeri editör
 
 Kaynaklar: `~/Desktop/lego/Ekran Resmi 2026-11-15 *.png` (EV3 Classroom blok paleti, 8 resim)

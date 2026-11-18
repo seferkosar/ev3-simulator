@@ -3,6 +3,7 @@
 import * as Blockly from 'blockly/core';
 import 'blockly/blocks';
 import * as Tr from 'blockly/msg/tr';
+import { pythonGenerator } from 'blockly/python';
 import { bloklariKaydet } from './kayit.js';
 import { EV3_TEMASI } from './tema.js';
 import { daireKategoriyiKaydet } from './daireKategori.js';
@@ -10,6 +11,8 @@ import { daireKategoriyiKaydet } from './daireKategori.js';
 daireKategoriyiKaydet();
 
 Blockly.setLocale(Tr);
+// Python'da PEP 8'e uygun 4 boşluk girinti (yardımcı fonksiyonlarla aynı).
+pythonGenerator.INDENT = '    ';
 // Değişken bloklarını ortaokul öğrencisi için daha doğal Türkçeyle yaz.
 Blockly.Msg.VARIABLES_SET = '%1 değerini %2 yap';
 Blockly.Msg.MATH_CHANGE_TITLE = '%1 değerini %2 artır';

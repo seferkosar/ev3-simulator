@@ -1,5 +1,9 @@
+import { Order } from 'blockly/python';
+import { Order as JsOrder } from 'blockly/javascript';
 import { komut, simge, giris, secim, aracOgesi, MOTOR_PORTLARI } from '../ortak.js';
 import { SIMGE } from '../simgeler.js';
+import { hareket as pyHareket, motor as pyMotor } from '../pyDonanim.js';
+import { carp } from '../pythonYardimci.js';
 
 const S = 'hareket_blocks';
 const ikon = simge(SIMGE.hareket);
@@ -55,8 +59,95 @@ const b = {
   ]),
 };
 
+const alan = (b, ad) => b.getFieldValue(ad);
+const jsD = (u, b, ad, vars = '0') => u.valueToCode(b, ad, JsOrder.NONE) || vars;
+const pyD = (u, b, ad, vars = '0') => u.valueToCode(b, ad, Order.NONE) || vars;
+
+const js = {
+  hareket_yonlu: (b, u) =>
+    `await robot.hareketYonlu('${alan(b, 'YON')}', ${jsD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}', YIGIN);\n`,
+  hareket_donuslu: (b, u) =>
+    `await robot.hareketDonuslu(${jsD(u, b, 'DONUS')}, ${jsD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}', undefined, YIGIN);\n`,
+  hareket_baslat: (b, u) => `robot.hareketBaslat(${jsD(u, b, 'DONUS')});\n`,
+  hareket_durdur: () => 'robot.hareketDurdur();\n',
+  hareket_hiz_ayarla: (b, u) => `robot.hareketHizAyarla(${jsD(u, b, 'HIZ')});\n`,
+  hareket_motorlari: (b) => `robot.hareketMotorlari('${alan(b, 'SOL')}', '${alan(b, 'SAG')}');\n`,
+  hareket_durus_ayarla: (b) => `robot.hareketDurus('${alan(b, 'DURUS')}');\n`,
+  hareket_donuslu_hizla: (b, u) =>
+    `await robot.hareketDonuslu(${jsD(u, b, 'DONUS')}, ${jsD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}', ${jsD(u, b, 'HIZ')}, YIGIN);\n`,
+  hareket_tank: (b, u) =>
+    `await robot.hareketTank(${jsD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}', ${jsD(u, b, 'SOL_HIZ')}, ${jsD(u, b, 'SAG_HIZ')}, YIGIN);\n`,
+  hareket_baslat_hizla: (b, u) => `robot.hareketBaslat(${jsD(u, b, 'DONUS')}, ${jsD(u, b, 'HIZ')});\n`,
+  hareket_tank_baslat: (b, u) => `robot.hareketTankBaslat(${jsD(u, b, 'SOL_HIZ')}, ${jsD(u, b, 'SAG_HIZ')});\n`,
+};
+
+const YONLU = {
+  FWD: ['hareket_hizi', 'hareket_hizi'],
+  BWD: ['-hareket_hizi', '-hareket_hizi'],
+  RIGHT: ['hareket_hizi', '-hareket_hizi'],
+  LEFT: ['-hareket_hizi', 'hareket_hizi'],
+};
+
+const python = {
+  hareket_yonlu: (b, u) => {
+    pyHareket(u);
+    const [sol, sag] = YONLU[alan(b, 'YON')];
+    return `hareket_et(${sol}, ${sag}, ${pyD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}')\n`;
+  },
+  hareket_donuslu: (b, u) => {
+    pyHareket(u);
+    return (
+      `_sol, _sag = donus_hizlari(${pyD(u, b, 'DONUS')}, hareket_hizi)\n` +
+      `hareket_et(_sol, _sag, ${pyD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}')\n`
+    );
+  },
+  hareket_baslat: (b, u) => {
+    pyHareket(u);
+    return `_sol, _sag = donus_hizlari(${pyD(u, b, 'DONUS')}, hareket_hizi)\nsol_motor.run(_sol * 10)\nsag_motor.run(_sag * 10)\n`;
+  },
+  hareket_durdur: (b, u) => {
+    pyHareket(u);
+    return 'durdur(sol_motor, hareket_durusu)\ndurdur(sag_motor, hareket_durusu)\n';
+  },
+  hareket_hiz_ayarla: (b, u) => {
+    pyHareket(u);
+    return `hareket_hizi = ${pyD(u, b, 'HIZ')}\n`;
+  },
+  hareket_motorlari: (b, u) => {
+    pyHareket(u);
+    const sol = pyMotor(u, alan(b, 'SOL')).ad;
+    const sag = pyMotor(u, alan(b, 'SAG')).ad;
+    return `sol_motor, sag_motor = ${sol}, ${sag}\n`;
+  },
+  hareket_durus_ayarla: (b, u) => {
+    pyHareket(u);
+    return `hareket_durusu = Stop.${alan(b, 'DURUS')}\n`;
+  },
+  hareket_donuslu_hizla: (b, u) => {
+    pyHareket(u);
+    return (
+      `_sol, _sag = donus_hizlari(${pyD(u, b, 'DONUS')}, ${pyD(u, b, 'HIZ')})\n` +
+      `hareket_et(_sol, _sag, ${pyD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}')\n`
+    );
+  },
+  hareket_tank: (b, u) => {
+    pyHareket(u);
+    return `hareket_et(${pyD(u, b, 'SOL_HIZ')}, ${pyD(u, b, 'SAG_HIZ')}, ${pyD(u, b, 'MIKTAR')}, '${alan(b, 'BIRIM')}')\n`;
+  },
+  hareket_baslat_hizla: (b, u) => {
+    pyHareket(u);
+    return `_sol, _sag = donus_hizlari(${pyD(u, b, 'DONUS')}, ${pyD(u, b, 'HIZ')})\nsol_motor.run(_sol * 10)\nsag_motor.run(_sag * 10)\n`;
+  },
+  hareket_tank_baslat: (b, u) => {
+    pyHareket(u);
+    return `sol_motor.run(${carp(pyD(u, b, 'SOL_HIZ'), 10)})\nsag_motor.run(${carp(pyD(u, b, 'SAG_HIZ'), 10)})\n`;
+  },
+};
+
 export default {
   anahtar: 'hareket',
+  js,
+  python,
   ad: 'Hareket',
   stil: S,
   bloklar: Object.values(b),

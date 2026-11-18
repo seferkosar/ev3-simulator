@@ -13,17 +13,37 @@
         <h1>Otopark Ekranı</h1>
         <p class="hikaye" id="hikaye"></p>
       </div>
-      <div class="ust-sag">
-        <nav class="gorevler" id="gorevler" aria-label="Görevler"></nav>
+      <div class="ust-sag" role="toolbar" aria-label="Görünüm">
+        <button id="kontrast" class="kucuk-dugme" aria-pressed="false" title="Yüksek kontrast">◐ Kontrast</button>
+        <button id="yazi-kucult" class="kucuk-dugme" title="Yazıyı küçült" aria-label="Yazıyı küçült">A−</button>
+        <button id="yazi-buyut" class="kucuk-dugme" title="Yazıyı büyüt" aria-label="Yazıyı büyüt">A+</button>
+        <button id="yazdir" class="kucuk-dugme" title="Programı yazdır">⎙ Yazdır</button>
+        <button id="klavye" class="kucuk-dugme" title="Klavye kısayolları">⌨ Klavye</button>
+      </div>
+    </header>
+
+    <section class="gorev-karti" aria-label="Görev">
+      <details class="ders-menusu" id="ders-menusu">
+        <summary>📚 Görevler</summary>
+        <div class="ders-listesi" id="ders-listesi" aria-label="Görevler, etkinlikler ve öğretim programındaki EV3 dersleri"></div>
+      </details>
+      <details class="ders-menusu asama-menusu" id="asama-menusu">
+        <summary>🧭 Aşamalar</summary>
+        <div class="ders-listesi" id="asama-listesi" aria-label="Robot Yolculuğu aşamaları"></div>
+      </details>
+      <nav class="gorevler" id="gorevler" aria-label="Otopark Ekranı görevleri"></nav>
+      <p class="gorev-metni" id="gorev-metni"></p>
+      <div class="gorev-ipucu">
         <button id="ipucu" class="ipucu-dugme" title="Bir ipucu göster">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.6.4 1 1.1 1 1.8V16h5v-.3c0-.7.4-1.4 1-1.8A6 6 0 0012 3z" />
           </svg>
-          <span id="ipucu-yazi">İpucu</span>
+          <span>İpucu</span>
         </button>
+        <button id="cozum" class="ipucu-dugme" hidden>Çözümü göster</button>
       </div>
-    </header>
-    <p class="gorev-metni" id="gorev-metni"></p>
+      <p class="ipucu-balonu" id="ipucu-balonu" role="status" hidden></p>
+    </section>
 
     <main class="duzen">
       <section class="editor" aria-label="Kod editörü">
@@ -33,13 +53,21 @@
             <span>Çalıştır</span>
           </button>
           <span class="ayirici"></span>
-          <button id="geri-al" class="dugme" title="Geri al" aria-label="Geri al" disabled>
+          <button id="geri-al" class="dugme" title="Geri al (Ctrl+Z)" aria-label="Geri al" disabled>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3" /></svg>
           </button>
-          <button id="yinele" class="dugme" title="Yinele" aria-label="Yinele" disabled>
+          <button id="yinele" class="dugme" title="Yinele (Ctrl+Y)" aria-label="Yinele" disabled>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3" /></svg>
           </button>
           <span class="ayirici"></span>
+          <label class="arama">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg>
+            <input id="blok-ara" type="search" placeholder="Blok ara…" aria-label="Blok ara" autocomplete="off" />
+          </label>
+          <span class="bosluk"></span>
+          <button id="yeni-program" class="dugme" title="Yeni program" aria-label="Yeni program">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h8l4 4v14H6zM14 3v4h4M12 11v6M9 14h6" /></svg>
+          </button>
           <button id="disa-aktar" class="dugme" title="Programı dosyaya kaydet" aria-label="Dışa aktar">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14" /></svg>
           </button>
@@ -58,43 +86,154 @@
         </section>
       </section>
 
-      <section class="sag" aria-label="Robot ve kod">
+      <section class="sag" id="sag-panel" aria-label="Robot ve kod">
         <div class="sekmeler" role="tablist">
           <button role="tab" id="sekme-robot" aria-controls="panel-robot" aria-selected="true">Robot</button>
+          <button role="tab" id="sekme-sahne" aria-controls="panel-sahne" aria-selected="false">Sahne</button>
           <button role="tab" id="sekme-python" aria-controls="panel-python" aria-selected="false">
             &lt;/&gt; Python
           </button>
         </div>
 
         <div id="panel-robot" role="tabpanel" aria-labelledby="sekme-robot" class="panel panel-robot">
+          <div class="sim-cubugu" role="toolbar" aria-label="Simülatör">
+            <button id="yeniden-baslat" class="sim-dugme" title="Programı baştan çalıştır">⟳ Yeniden başlat</button>
+            <button id="yavas" class="sim-dugme" aria-pressed="false" title="Her bloğu yavaşça çalıştır ve göster">🐢 Yavaş</button>
+            <button id="sessiz" class="sim-dugme" aria-pressed="false" title="Sesi kapat">🔊 Ses</button>
+            <button id="tam-ekran" class="sim-dugme" title="Tam ekran">⛶</button>
+          </div>
+          <div class="portlar" id="motor-portlari" aria-label="Motor portları"></div>
           <div class="tugla" aria-label="Sanal EV3 tuğlası">
             <div class="tugla-ekran-cerceve">
-              <canvas id="ekran" aria-label="EV3 ekranı"></canvas>
+              <canvas id="ekran" aria-label="EV3 ekranı. Büyütmek için tıkla." tabindex="0"></canvas>
             </div>
-            <div class="tugla-dugmeler" aria-hidden="true">
-              <span class="isik" id="durum-isigi"></span>
+            <div class="tugla-dugmeler">
+              <span class="isik"></span>
               <div class="yon-dugmeleri">
-                <span class="yd yd-yukari"></span>
-                <span class="yd yd-sol"></span>
-                <span class="yd yd-orta"></span>
-                <span class="yd yd-sag"></span>
-                <span class="yd yd-asagi"></span>
+                <button class="yd yd-yukari" data-dugme="UP" aria-label="Yukarı düğmesi"></button>
+                <button class="yd yd-sol" data-dugme="LEFT" aria-label="Sol düğme"></button>
+                <button class="yd yd-orta" data-dugme="CENTER" aria-label="Orta düğme"></button>
+                <button class="yd yd-sag" data-dugme="RIGHT" aria-label="Sağ düğme"></button>
+                <button class="yd yd-asagi" data-dugme="DOWN" aria-label="Aşağı düğmesi"></button>
               </div>
               <span class="isik"></span>
             </div>
           </div>
+          <div class="portlar" id="sensor-portlari" aria-label="Sensör portları"></div>
           <p id="fare-konumu" class="fare-konumu" aria-live="polite">
             Fareyi ekranın üstünde gezdir: konumu burada görürsün.
           </p>
           <button id="sifirla" class="dugme-acik">Ekranı sıfırla</button>
         </div>
 
+        <div id="panel-sahne" role="tabpanel" aria-labelledby="sekme-sahne" class="panel panel-sahne" hidden>
+          <div class="sim-cubugu" role="toolbar" aria-label="Sahne">
+            <label class="sahne-sec">Sahne <select id="sahne-sec"></select></label>
+            <button id="sahne-sifirla" class="sim-dugme" title="Robotu başlangıç noktasına al, izi sil">⟲ Başa al</button>
+            <button id="sahne-kamera" class="sim-dugme" aria-pressed="false" title="Kamera robotu takip etsin">🎥 Takip</button>
+            <button id="sahne-iz" class="sim-dugme" aria-pressed="true" title="Robotun geçtiği yeri çiz">〰 İz</button>
+            <button id="sahne-cetvel" class="sim-dugme" aria-pressed="false" title="Sahnede sürükleyerek ölç">📏 Cetvel</button>
+            <button id="sahne-dokun" class="sim-dugme" title="Basılı tut: dokunma sensörüne basılmış sayılır">👆 Dokunmaya bas</button>
+          </div>
+          <p id="sahne-gorev" class="sahne-gorev"></p>
+          <p id="sahne-serbest-notu" class="sahne-not" hidden>
+            Hareket ve sensör blokları bu görevde kapalı.
+            <button id="serbeste-gec" class="dugme-acik">Serbest moda geç</button>
+          </p>
+          <canvas id="sahne" class="sahne-tuvali" aria-label="Sahne: robotun üstten görünüşü"></canvas>
+          <dl class="hud" id="hud">
+            <div><dt>Mesafe</dt><dd id="hud-mesafe">–</dd></div>
+            <div><dt>Renk</dt><dd id="hud-renk">–</dd></div>
+            <div><dt>Yansıyan</dt><dd id="hud-yansiyan">–</dd></div>
+            <div><dt>Açı</dt><dd id="hud-aci">–</dd></div>
+            <div><dt>Dokunma</dt><dd id="hud-dokunma">–</dd></div>
+            <div><dt>Tekerler</dt><dd id="hud-teker">–</dd></div>
+            <div><dt>Yıldız</dt><dd id="hud-yildiz">–</dd></div>
+            <div><dt>Süre</dt><dd id="hud-sure">0,0 sn</dd></div>
+          </dl>
+          <div class="sahne-alt">
+            <canvas id="sahne-ekran" aria-label="EV3 ekranı (küçük)"></canvas>
+            <label class="tahmin">
+              Tahmin et: robot kaç cm gidecek?
+              <span><input id="tahmin" type="number" min="0" step="1" inputmode="numeric" /> cm</span>
+            </label>
+          </div>
+        </div>
+
         <div id="panel-python" role="tabpanel" aria-labelledby="sekme-python" class="panel panel-python" hidden>
-          <p class="python-not">Bloklarının Python karşılığı. Bu kod gerçek EV3'te (Pybricks) çalışır.</p>
+          <div class="python-ust">
+            <p class="python-not">Bloklarının Python karşılığı. Gerçek EV3'te (Pybricks) çalıştırabilirsin.</p>
+            <button id="python-indir" class="dugme-acik">main.py indir</button>
+          </div>
           <pre id="python" aria-readonly="true" aria-label="Python kodu"></pre>
         </div>
       </section>
     </main>
+
+    <dialog id="cozum-penceresi" class="pencere" aria-labelledby="cozum-baslik">
+      <h2 id="cozum-baslik">Örnek çözüm</h2>
+      <p>Bloklarını bununla karşılaştır. Aynısını kendin kur ve çalıştır.</p>
+      <div id="cozum-alani" class="cozum-alani"></div>
+      <form method="dialog"><button class="dugme-acik">Kapat</button></form>
+    </dialog>
+
+    <dialog id="ders-penceresi" class="pencere ders-penceresi" aria-labelledby="ders-baslik">
+      <p class="ders-ust" id="ders-ust"></p>
+      <h2 id="ders-baslik"></h2>
+      <p id="ders-durum" class="ders-durum"></p>
+      <dl class="ders-bilgi" id="ders-bilgi"></dl>
+      <form method="dialog" class="pencere-dugmeler">
+        <button value="kapat" class="dugme-acik">Kapat</button>
+        <button value="bos" id="ders-bos" class="dugme-acik">Boş çalışma alanıyla başla</button>
+        <button value="yukle" id="ders-yukle" class="dugme-acik dugme-birincil">Örnek programı yükle</button>
+      </form>
+    </dialog>
+
+    <dialog id="asama-penceresi" class="pencere ders-penceresi" aria-labelledby="asama-baslik">
+      <p class="ders-ust" id="asama-ust"></p>
+      <h2 id="asama-baslik"></h2>
+      <p id="asama-hikaye"></p>
+      <h3 class="asama-alt-baslik">Kullanacağın bloklar</h3>
+      <ul id="asama-bloklar" class="asama-bloklar"></ul>
+      <p class="ders-ust" id="asama-hedef"></p>
+      <p class="ders-durum" id="asama-not"></p>
+      <p class="ders-ust">Bir kare 30 cm. Sahnede: taş = duvar, sarı yıldız = topla, kahverengi kutu = paket, turuncu çerçeve (Z) = teslim alanı, bayrak = hedef.</p>
+      <form method="dialog" class="pencere-dugmeler">
+        <button value="kapat" class="dugme-acik">Kapat</button>
+        <button value="basla" class="dugme-acik dugme-birincil">Başla</button>
+      </form>
+    </dialog>
+
+    <dialog id="klavye-penceresi" class="pencere" aria-labelledby="klavye-baslik">
+      <h2 id="klavye-baslik">Klavye kısayolları</h2>
+      <ul class="kisayollar">
+        <li><kbd>Tab</kbd> Araç kutusu, çalışma alanı ve düğmeler arasında gez</li>
+        <li><kbd>Ok tuşları</kbd> Bloklar arasında gez</li>
+        <li><kbd>Home</kbd> / <kbd>End</kbd> Bloğun başına / sonuna git</li>
+        <li><kbd>Page Up</kbd> / <kbd>Page Down</kbd> Yığının başına / sonuna git</li>
+        <li><kbd>Ctrl</kbd>+<kbd>Z</kbd> Geri al, <kbd>Ctrl</kbd>+<kbd>Y</kbd> Yinele</li>
+        <li><kbd>Ctrl</kbd>+<kbd>Enter</kbd> Programı çalıştır / durdur</li>
+        <li><kbd>Esc</kbd> Büyütülmüş ekranı kapat</li>
+      </ul>
+      <form method="dialog"><button class="dugme-acik">Kapat</button></form>
+    </dialog>
+
+    <dialog id="yeni-penceresi" class="pencere" aria-labelledby="yeni-baslik">
+      <h2 id="yeni-baslik">Yeni program</h2>
+      <p>Çalışma alanındaki bütün bloklar silinecek. Emin misin?</p>
+      <form method="dialog" class="pencere-dugmeler">
+        <button value="hayir" class="dugme-acik">Vazgeç</button>
+        <button value="evet" class="dugme-acik dugme-tehlike">Evet, sil</button>
+      </form>
+    </dialog>
+
+    <section class="yazdir-alani" aria-hidden="true">
+      <h2 id="yazdir-baslik"></h2>
+      <div id="yazdir-bloklar"></div>
+      <h3>Python kodu</h3>
+      <pre id="yazdir-python"></pre>
+    </section>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -5,15 +5,37 @@ import { programiYurut, agiKapat } from '../src/calistirici/yurutucu.js';
 import { ekranOlustur, komutuUygula } from '../src/ekran/ekranModeli.js';
 import { program, satiraYaz, konumaYaz, metin, sayi, degisken, alanla } from './yardimci.js';
 
-/** Bloklardan JS üretir, çalıştırır, ekran modelini ve bekleme sürelerini döndürür. */
-async function calistir(durum) {
+/**
+ * Bloklardan JS üretir, çalıştırır. Döner: ekran modeli, bekleme süreleri, ışık renkleri ve
+ * bütün komutların sırası (ör. 'resim:NEUTRAL', 'bekle:2000', 'temizle').
+ */
+async function calistir(durum, secenekler = {}) {
   const kod = alanla(durum, jsKoduUret);
   const ekran = ekranOlustur();
   const beklemeler = [];
-  await programiYurut(kod, (k) => komutuUygula(ekran, k), {
-    bekle: async (ms) => beklemeler.push(ms),
-  });
-  return { ekran, beklemeler, kod };
+  const isiklar = [];
+  const sira = [];
+  const diger = [];
+  await programiYurut(
+    kod,
+    (mesaj) => {
+      if (mesaj.tur !== 'toplu') return;
+      for (const k of mesaj.komutlar) {
+        sira.push([k.tur, k.resim ?? k.renk ?? k.metin].filter((p) => p !== undefined).join(':'));
+        if (k.tur === 'isik') isiklar.push(k.renk);
+        else if (['temizle', 'konum', 'resim'].includes(k.tur)) komutuUygula(ekran, k);
+        else diger.push(k);
+      }
+    },
+    {
+      bekle: async (ms) => {
+        beklemeler.push(ms);
+        sira.push(`bekle:${ms}`);
+      },
+      ...secenekler,
+    },
+  );
+  return { ekran, beklemeler, isiklar, sira, diger, kod };
 }
 
 /** Python'daki draw_text satırlarından (x, y, metin) çıkarır (yalnızca düz değerler). */
@@ -73,6 +95,40 @@ describe('bloklar simülatörde çalışır', () => {
       program([{ type: 'kontrol_bekle', inputs: { SURE: sayi(0.5) } }]),
     );
     expect(beklemeler).toEqual([500]);
+  });
+
+  it('resim göster: ekran temizlenir, resim çizilir, üstüne yazı yazılabilir', async () => {
+    const { ekran } = await calistir(
+      program([satiraYaz('ESKI'), { type: 'ekran_resim', fields: { RESIM: 'ANGRY' } }, satiraYaz('YENI', 8)]),
+    );
+    expect(ekran.ogeler()).toEqual([{ resim: 'ANGRY' }, { metin: 'YENI', x: 0, y: 112 }]);
+  });
+
+  it('süreli resim: göster, bekle, temizle', async () => {
+    const { sira, ekran } = await calistir(
+      program([{ type: 'ekran_resim_sureli', fields: { RESIM: 'WINKING' }, inputs: { SURE: sayi(2) } }]),
+    );
+    expect(sira).toEqual(['resim:WINKING', 'bekle:2000', 'temizle']);
+    expect(ekran.ogeler()).toEqual([]);
+  });
+
+  it('durum ışığı: renk ve kapatma', async () => {
+    const { isiklar } = await calistir(
+      program([
+        { type: 'ekran_durum_isigi', fields: { RENK: 'RED' } },
+        { type: 'ekran_durum_isigi', fields: { RENK: 'ORANGE' } },
+        { type: 'ekran_durum_isigi', fields: { RENK: 'OFF' } },
+      ]),
+    );
+    expect(isiklar).toEqual(['RED', 'ORANGE', 'OFF']);
+  });
+
+  it('her resim seçeneği ekranda çizilebilir', async () => {
+    const { RESIMLER } = await import('../src/ekran/ekranModeli.js');
+    const { BLOK_KATEGORILERI } = await import('../src/bloklar/kategoriler/index.js');
+    const blok = BLOK_KATEGORILERI.find((k) => k.anahtar === 'ekran').bloklar.find((b) => b.type === 'ekran_resim');
+    const secenekler = blok.args0.find((a) => a.name === 'RESIM').options.map(([, deger]) => deger);
+    expect(secenekler.sort()).toEqual([...RESIMLER].sort());
   });
 
   it('"program başladığında" bloğuna bağlı olmayan bloklar çalışmaz', async () => {

@@ -11,19 +11,26 @@ const degiskenKategorisi = (kutu) => kutu.contents.find((k) => k.name === 'Deği
 describe('araç kutusu', () => {
   it('bütün kategoriler, resimlerdeki sırayla görünür', () => {
     for (const g of GOREVLER) {
-      expect(aracKutusu(g.no).contents.map((k) => k.name)).toEqual([
+      expect(aracKutusu(g.no).contents.map((k) => k.name)).toEqual(['Ara',
         'Motorlar', 'Hareket', 'Ekran', 'Ses', 'Olaylar', 'Kontrol',
         'Sensörler', 'Operatörler', 'Değişkenler', 'Bloklarım',
       ]);
     }
   });
 
-  it.each([1, 2])('Görev %i: yalnızca başla, temizle ve satıra yaz açık', (no) => {
+  const TUM_EKRAN = [
+    'ekran_durum_isigi', 'ekran_konuma_yaz', 'ekran_resim', 'ekran_resim_sureli',
+    'ekran_satira_yaz', 'ekran_temizle',
+  ];
+
+  it.each([1, 2])('Görev %i: başla ve bütün Ekran blokları açık', (no) => {
     const kutu = aracKutusu(no);
-    expect(acikTurler(kutu)).toEqual(
-      ['ekran_satira_yaz', 'ekran_temizle', 'olay_program_basladiginda'],
-    );
+    expect(acikTurler(kutu)).toEqual([...TUM_EKRAN, 'olay_program_basladiginda']);
     expect(degiskenKategorisi(kutu).custom).toBe(DEGISKEN_KAPALI);
+  });
+
+  it.each([1, 2, 3, 4])('Görev %i: bütün Ekran blokları açık', (no) => {
+    expect(acikTurler(aracKutusu(no))).toEqual(expect.arrayContaining(TUM_EKRAN));
   });
 
   it('kapalı bloklar da araç kutusunda görünür (gri)', () => {
@@ -35,7 +42,7 @@ describe('araç kutusu', () => {
   it('Görev 3: + birleştir ve değişkenler', () => {
     const kutu = aracKutusu(3);
     expect(acikTurler(kutu)).toContain('op_birlestir');
-    expect(acikTurler(kutu)).not.toContain('ekran_konuma_yaz');
+    expect(acikTurler(aracKutusu(2))).not.toContain('op_birlestir');
     expect(degiskenKategorisi(kutu).custom).toBe(DEGISKEN_ACIK);
   });
 

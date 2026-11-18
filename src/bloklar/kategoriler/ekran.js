@@ -2,10 +2,11 @@ import { Order } from 'blockly/python';
 import { Order as JsOrder } from 'blockly/javascript';
 import { komut, simge, giris, secim, aracOgesi } from '../ortak.js';
 import { SIMGE } from '../simgeler.js';
-import { eksiBir, satirdanY } from '../pythonYardimci.js';
+import { eksiBir, satirdanY, satirSonuY, saniyedenMs, saniyedenMsJs } from '../pythonYardimci.js';
 
 const S = 'ekran_blocks';
 const ikon = simge(SIMGE.tugla);
+// Değerler ekranModeli.js'teki RESIMLER ve Pybricks ImageFile adlarıyla aynı olmalı.
 const RESIMLER = [
   ['Gözler / Nötr', 'NEUTRAL'],
   ['Gözler / Uyanık', 'AWAKE'],
@@ -13,6 +14,7 @@ const RESIMLER = [
   ['Gözler / Kızgın', 'ANGRY'],
   ['Gözler / Başı dönmüş', 'DIZZY'],
   ['Gözler / Göz kırpan', 'WINKING'],
+  ['Gözler / Sevgi', 'LOVE'],
 ];
 
 const b = {
@@ -45,14 +47,47 @@ const b = {
   ]),
 };
 
+const resimImport = (u) => {
+  u.definitions_['import_imagefile'] = 'from pybricks.media.ev3dev import ImageFile';
+};
+
 // Satır ve konum öğrenci için 1'den başlar; Pybricks'te (0, 0) sol üst köşedir.
 const python = {
   ekran_temizle: () => 'ev3.screen.clear()\n',
 
+  ekran_resim: (blok, u) => {
+    resimImport(u);
+    return `ev3.screen.load_image(ImageFile.${blok.getFieldValue('RESIM')})\n`;
+  },
+
+  // Resim süre boyunca kalır, sonra ekran temizlenir.
+  ekran_resim_sureli: (blok, u) => {
+    resimImport(u);
+    u.definitions_['import_wait'] = 'from pybricks.tools import wait';
+    const sure = u.valueToCode(blok, 'SURE', Order.MULTIPLICATIVE) || '0';
+    return (
+      `ev3.screen.load_image(ImageFile.${blok.getFieldValue('RESIM')})\n` +
+      `wait(${saniyedenMs(sure)})\n` +
+      'ev3.screen.clear()\n'
+    );
+  },
+
+  ekran_durum_isigi: (blok, u) => {
+    const renk = blok.getFieldValue('RENK');
+    if (renk === 'OFF') return 'ev3.light.off()\n';
+    u.definitions_['import_color'] = 'from pybricks.parameters import Color';
+    return `ev3.light.on(Color.${renk})\n`;
+  },
+
   ekran_satira_yaz: (blok, u) => {
     const metin = u.valueToCode(blok, 'METIN', Order.NONE) || "''";
     const satir = u.valueToCode(blok, 'SATIR', Order.NONE) || '1';
-    return `ev3.screen.draw_text(0, ${satirdanY(satir)}, ${metin})\n`;
+    // Önce satırı beyaz kutuyla temizle (simülatördeki gibi yazılar üst üste binmesin).
+    u.definitions_['import_color'] = 'from pybricks.parameters import Color';
+    return (
+      `ev3.screen.draw_box(0, ${satirdanY(satir)}, 177, ${satirSonuY(satir)}, fill=True, color=Color.WHITE)\n` +
+      `ev3.screen.draw_text(0, ${satirdanY(satir)}, ${metin})\n`
+    );
   },
 
   ekran_konuma_yaz: (blok, u) => {
@@ -70,14 +105,30 @@ const python = {
   },
 };
 
-// Simülatörde çalışan JS. `ekran` nesnesini Web Worker sağlar (src/calistirici/yurutucu.js).
+// Simülatörde çalışan JS. `ekran`, `isik` ve `bekle`yi Web Worker sağlar (src/calistirici/yurutucu.js).
 const js = {
   ekran_temizle: () => 'ekran.clear();\n',
+
+  ekran_resim: (blok) => `ekran.load_image('${blok.getFieldValue('RESIM')}');\n`,
+
+  ekran_resim_sureli: (blok, u) => {
+    const sure = u.valueToCode(blok, 'SURE', JsOrder.MULTIPLICATION) || '0';
+    return (
+      `ekran.load_image('${blok.getFieldValue('RESIM')}');\n` +
+      `await bekle(${saniyedenMsJs(sure)});\n` +
+      'ekran.clear();\n'
+    );
+  },
+
+  ekran_durum_isigi: (blok) => {
+    const renk = blok.getFieldValue('RENK');
+    return renk === 'OFF' ? 'isik.off();\n' : `isik.on('${renk}');\n`;
+  },
 
   ekran_satira_yaz: (blok, u) => {
     const metin = u.valueToCode(blok, 'METIN', JsOrder.NONE) || "''";
     const satir = u.valueToCode(blok, 'SATIR', JsOrder.NONE) || '1';
-    return `ekran.draw_text(0, ${satirdanY(satir)}, ${metin});\n`;
+    return `ekran.draw_text(0, ${satirdanY(satir)}, ${metin}, null, true);\n`;
   },
 
   ekran_konuma_yaz: (blok, u) => {

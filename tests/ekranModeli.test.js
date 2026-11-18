@@ -134,6 +134,44 @@ describe('ekran modeli', () => {
     });
   });
 
+  describe('satır temizleme ("yaz, satır" bloğu)', () => {
+    it('aynı satırdaki eski yazı silinir, diğer satırlar ve resim kalır', () => {
+      const ekran = ekranOlustur();
+      ekran.load_image('NEUTRAL');
+      ekran.draw_text(0, 0, 'mesafe 100', undefined, true);
+      ekran.draw_text(0, 16, 'renk yok', undefined, true);
+      ekran.draw_text(0, 0, 'mesafe 30', undefined, true);
+      expect(ekran.ogeler()).toEqual([
+        { resim: 'NEUTRAL' },
+        { metin: 'renk yok', x: 0, y: 16 },
+        { metin: 'mesafe 30', x: 0, y: 0 },
+      ]);
+      expect(ekran.gunluk().filter((g) => g.tur === 'konum')).toHaveLength(3);
+    });
+  });
+
+  describe('load_image', () => {
+    it('ekranı temizleyip resmi gösterir; günlüğe yazar', () => {
+      const ekran = ekranOlustur();
+      ekran.print('A');
+      ekran.load_image('NEUTRAL');
+      expect(ekran.ogeler()).toEqual([{ resim: 'NEUTRAL' }]);
+      expect(ekran.gunluk().at(-1)).toEqual({ tur: 'resim', resim: 'NEUTRAL' });
+    });
+
+    it('sonraki print en üst satırdan başlar', () => {
+      const ekran = ekranOlustur();
+      ekran.print('A');
+      ekran.load_image('AWAKE');
+      ekran.print('B');
+      expect(ekran.ogeler()[1]).toEqual({ metin: 'B', x: 0, y: 0 });
+    });
+
+    it('bilinmeyen resim hata verir', () => {
+      expect(() => ekranOlustur().load_image('YOK')).toThrow('Bilinmeyen resim');
+    });
+  });
+
   it('günlük ve öğeler kopya olarak döner', () => {
     const ekran = ekranOlustur();
     ekran.print('A');

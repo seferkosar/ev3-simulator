@@ -8,9 +8,10 @@ import kontrol from './kontrol.js';
 import sensorler from './sensorler.js';
 import operatorler from './operatorler.js';
 import degerler from './degerler.js';
+import bloklarim from './bloklarim.js';
 
 /** Araç kutusunda blok listesiyle görünen kategoriler. */
 export const BLOK_KATEGORILERI = [motorlar, hareket, ekran, ses, olaylar, kontrol, sensorler, operatorler];
 
 /** Blockly'ye kaydedilecek her şey (gölge değer blokları dahil). */
-export const TUM_KATEGORILER = [...BLOK_KATEGORILERI, degerler];
+export const TUM_KATEGORILER = [...BLOK_KATEGORILERI, degerler, bloklarim];

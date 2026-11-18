@@ -3,15 +3,23 @@ import * as Blockly from 'blockly/core';
 import { pythonGenerator } from 'blockly/python';
 import { javascriptGenerator } from 'blockly/javascript';
 import { TUM_KATEGORILER } from './kategoriler/index.js';
+import { INGILIZCE_ADLAR } from './ingilizceAdlar.js';
 
 export const GOREVDE_KAPALI = 'GOREVDE_KAPALI';
 
 let kayitli = false;
 
+/** Türkçe açıklamanın altına EV3 Classroom'daki İngilizce adı ekler. */
+export function ipucuMetni(blok) {
+  const ingilizce = INGILIZCE_ADLAR[blok.type];
+  if (!ingilizce) return blok.tooltip ?? '';
+  return `${blok.tooltip ? `${blok.tooltip}\n` : ''}EV3 Classroom: ${ingilizce}`;
+}
+
 export function bloklariKaydet() {
   if (kayitli) return;
   for (const k of TUM_KATEGORILER) {
-    Blockly.common.defineBlocksWithJsonArray(k.bloklar);
+    Blockly.common.defineBlocksWithJsonArray(k.bloklar.map((b) => ({ ...b, tooltip: ipucuMetni(b) })));
     Object.assign(pythonGenerator.forBlock, k.python ?? {});
     Object.assign(javascriptGenerator.forBlock, k.js ?? {});
   }
@@ -26,6 +34,8 @@ export const tumBlokTurleri = () => TUM_KATEGORILER.flatMap((k) => k.bloklar.map
 export const DEGISKEN_ACIK = 'EV3_DEGISKENLER_ACIK';
 export const DEGISKEN_KAPALI = 'EV3_DEGISKENLER_KAPALI';
 export const BLOKLARIM = 'EV3_BLOKLARIM';
+export const BLOKLARIM_ACIK = 'EV3_BLOKLARIM_ACIK';
+export const ARAMA = 'EV3_ARAMA';
 
 const sayiGolgesi = (NUM) => ({ shadow: { type: 'ev3_sayi', fields: { NUM } } });
 
@@ -47,15 +57,25 @@ function degiskenAkisi(calismaAlani) {
   return ogeler;
 }
 
-/** Dinamik kategorileri ve "Değişken oluştur" düğmesini bir çalışma alanına bağlar. */
-export function dinamikKategorileriBagla(calismaAlani) {
+/**
+ * Dinamik kategorileri ve "Değişken oluştur" düğmesini bir çalışma alanına bağlar.
+ * aramaSonuclari(): { sorgu, ogeler } — "Ara" kategorisinde gösterilecek bloklar.
+ */
+export function dinamikKategorileriBagla(calismaAlani, { aramaSonuclari = () => ({ sorgu: '', ogeler: [] }) } = {}) {
+  calismaAlani.registerToolboxCategoryCallback(ARAMA, () => {
+    const { sorgu, ogeler } = aramaSonuclari();
+    if (!sorgu.trim()) return [{ kind: 'label', text: 'Üstteki kutuya bir blok adı yaz (ör. "yaz", "motor").' }];
+    if (!ogeler.length) return [{ kind: 'label', text: `"${sorgu}" için blok bulunamadı.` }];
+    return ogeler;
+  });
   calismaAlani.registerToolboxCategoryCallback(DEGISKEN_ACIK, degiskenAkisi);
   calismaAlani.registerToolboxCategoryCallback(DEGISKEN_KAPALI, () => [
     { kind: 'label', text: 'Değişkenler sonraki görevlerde açılacak.' },
   ]);
   calismaAlani.registerToolboxCategoryCallback(BLOKLARIM, () => [
-    { kind: 'label', text: 'Kendi bloklarını sonraki seviyelerde yapacaksın.' },
+    { kind: 'label', text: 'Kendi bloklarını Serbest modda ve derslerde yapabilirsin.' },
   ]);
+  calismaAlani.registerToolboxCategoryCallback(BLOKLARIM_ACIK, (ws) => Blockly.Procedures.flyoutCategory(ws));
   calismaAlani.registerButtonCallback('DEGISKEN_OLUSTUR', (dugme) =>
     Blockly.Variables.createVariableButtonHandler(dugme.getTargetWorkspace()),
   );

@@ -12,6 +12,7 @@ export const RENKLER = {
   operatorler: '#59C059',
   degiskenler: '#F7973F',
   bloklarim: '#EC5B67',
+  arama: '#9aa0a6',
 };
 
 const stil = (renk) => ({ colourPrimary: renk });
